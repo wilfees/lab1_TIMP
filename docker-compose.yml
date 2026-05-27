@@ -1,0 +1,28 @@
+services:
+  auth:
+    image: node:22-alpine
+    container_name: building_safety_auth
+    working_dir: /app
+    command: sh -c "node server/index.js"
+    volumes:
+      - ./:/app
+    environment:
+      AUTH_PORT: 4000
+      MAILRU_USER: ${MAILRU_USER}
+      MAILRU_PASSWORD: ${MAILRU_PASSWORD}
+      MAILRU_FROM: ${MAILRU_FROM}
+    expose:
+      - "4000"
+    restart: unless-stopped
+
+  nginx:
+    image: nginx:alpine
+    container_name: building_safety_nginx
+    depends_on:
+      - auth
+    ports:
+      - "80:80"
+    volumes:
+      - ./build:/usr/share/nginx/html:ro
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    restart: unless-stopped
